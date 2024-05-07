@@ -1,0 +1,88 @@
+BBB is a TOD announcement plugin for Ashita 3 for FFXI.  It works by
+storing times of death of mobs of interest, combined with a
+specification of how each mob spawns, to announce when mobs are likely
+to spawn next.  This is used to coordinate linkshell events and
+activities. 
+
+BBB has a similar interface to altertaru. 
+
+@settod event_name "TOD" [... optional specs]
+- sets a TOD for "event_name".  Optional specs:
+    -a comma-delimited alert interval, in seconds
+    -x optional notes
+    -c optional claimer name
+    -d optional day
+    -i inter-window interval
+    -s start time
+    -w number of windows
+
+BBB uses a human-readable "event_name" (like "fafnir") to store event
+information.  Event information includes the TOD (e.g., for mobs), but
+the other information like alert intervals and number of windows are
+stored per-event as well.  Thus, users can specify custom events by
+creating a spec for it with @settod:
+
+@settod dynamis "next Thursday 7pm ET" -a 3600,1800,900,300,60,30,10 -i 0 -s 0 -w 0 -d 0
+- creates a custom "dynamis" event for next Thurs, 7PM.  
+  it will make alerts 60 min, 30 min, 15 min, 5 min, 1 min, 30s, and 10s before that time.  
+  The other options are all set to 0
+
+@settod fafnir "now +16 sec" -a 900,300,60,30,10,5 -i 1800 -s 75600 -w 7 -d 1
+- creates a fafnir event that died now, adds in the 16 sec delay.
+  it notes 7 windows, day 1, and claims 1800 seconds (30 mins) between windows. 
+  Before each window, it will announce 15 min (900s), 5 min (300s), 60s, 30s, 10s, and 5s.
+  it has a start time of 75600, which is 75,600 seconds, or 21 hours. 
+
+  This means the fafnir event will start 21 hours after the noted TOD, will report for 7 windows, and will make announcements before each window opens. 
+
+
+Once an event spec is created and stored, the optional arguments don't need to be specified again. 
+For instance, if the "fafnir" event above is created, subsequent fafnir tods can simply be reported by tod. 
+@settod fafnir "now +16sec"
+
+It will re-use all the previously-stored metadata to compute when the alert messages should be sent. 
+
+All announcements are sent through the linkshell.  It does not respond to /tells, except rudely. 
+
+
+To manage shared information, the plugin requires a web backend for storing tod
+information.  the manage-events.php script is to be placed in a web-facing URL
+that the plugin can reach.  Whenever a TOD is given or requested, BBB queries
+the manage-events.php endpoint to retrieve event information.  The script
+returns a JSON object that can be managed by the plugin.  When BBB is first
+loaded, it retrieves all event information and populates a number of timers to
+send linkshell alerts. 
+
+The manage-events.php script wraps a separate python script for actually
+storing and updating the tod information JSON.  set-tod.py will automatically
+create a backup of the current events.json file, update the events information
+according to arguments passed by BBB, and stores the updates. 
+
+
+Use example:
+
+Player A /loads BBB
+Player B /l @settod fafnir "now +16sec" -d 4
+BBB queries manage-events.php to update "fafnir" event with tod "now +16sec" and "day 4"
+manage-events.php parses "now +16sec" into a unix timestamp normalized to Eastern Time, then runs set-tod.py to update the events.json information. 
+manage-events.php passes the updated events.json back to BBB. 
+BBB updates its own internal timers. 
+Player A announcees /l "OK: fafnir set to ..."
+
+
+PHP has a useful time string parser that helps convert human-readable strings
+like "16 minutes after 7pm MT next Tuesday" into timestamps that can be used to
+compute event times.  In general, PHP is a mistake, but it solves a problem here.  
+
+
+
+Requirements:
+- building the plugin requires ADK, json.hpp, httplib
+- also statically link openssl to support https to the web backend
+  (find libcrypto_static.lib and libssl_static.lib binaries...)
+- built in Visual Studio 2022 CE, 32-bit library target
+
+Web server requires that supports PHP dynamic execution, as well as
+python3.8 for the set-tod.py script. 
+
+

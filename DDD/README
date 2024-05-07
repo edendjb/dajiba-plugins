@@ -1,0 +1,94 @@
+DDD by Dajiba 2024
+
+DDD is a DKP management plugin for Ashita v3 for FFXI.
+
+
+It queries the current zone or region of a list of players in the
+current linkshell.  Based on that list, it computes a number of points
+to give to each player in zone/region.  It tracks a running total of
+points acquired over multiple invocations of this plugin.  Doing so it
+allows partial automation of DKP tracking for linkshells. 
+
+DDD conducts a /sea or /sea region (depending on whether -r is passed). 
+
+Players are managed in a map structure.  The map maps each player's name
+to a vector of integers representing points they earned at an event.
+If the player is present, they will get 1 point per invocation (unless
+overridden with -p or -f). 
+
+The map structure is sent to discord through a webhook to post the point
+acquisition information.  The discord message can later be reviewed by
+the linkshell to produce a final account of the DKP earned for a
+specific event. 
+
+DDD is meant to support the scenario in which a linkshell manages point
+distribution for events over several windows.  For example, camping an
+HNM consists of 7 windows; each player who actively attends a window
+earns 1 point per window.  A player only earns 1 point if they are in
+the zone/region while the plugin is engaged.  The player earns 0 points
+if they are marked AFK (manually) or if they are not in zone/region. 
+
+
+The plugin is used in two phases.
+
+/ddd post event_name window_name 
+
+This will create a new event called event_name.  Events are assumed to
+be managed across windows.  Each window for an event must have a unique
+name.  
+
+Upon a successful "post" command, it will activate a Discord webhook.
+The webhook is used to create a message that reports all player point
+activity.  The message id is returned for subsequent use.
+
+Subsequent windows for the same event use:
+
+/ddd update event_name window_name_2
+
+The event is the same, but each window must be named uniquely (this is
+to prevent accidentally overwriting data or adding points erroneously). 
+
+In addition, "update" recycles the existing Discord post ID to overwrite
+point information.   This means only one Discord message to monitor for
+an event's allocation of points. 
+
+
+
+Various properties can be modified with flags passed to post/update
+commands. e.g., 
+
+/ddd update event w2 -a Playera,Playerb -f 8 -n "Derp claim"
+
+-a allows specifying players who are AFK (they will receive no points
+that window)
+
+-f allows forcing points for all players (e.g., if a certain LS gives a
+certain amount of points under specific conditions)
+
+-n allows specifying notes.  These notes appear at the bottom of the
+message sent to Discord. 
+
+
+Requirements:
+- ADK 3
+- json.hpp
+- httplib (or equivalent)
+- static linking of openssl (find libcrypto_static.lib and
+  libssl_static.lib binaries) to support https connection to discord
+  webhook 
+- "common" directory from DarkStar-equivalents that manage search
+  packets and encryption.
+- a bit of digging to find Eden's allocation for your Linkshell ID, and
+  a blowfish encryption key (part of DarkStar-equivalents...) 
+
+built in Visual Studio 2022 CE, 32-bit library target
+
+
+
+
+Note: the code is utter garbage and has multiple instances of copy/paste
+code.  It is meant to solve a local LS problem, not to showcase proper
+software development methodology. 
+
+
+

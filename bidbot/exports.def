@@ -1,0 +1,5 @@
+LIBRARY "bidbot"
+EXPORTS
+    GetInterfaceVersion
+    CreatePluginInfo
+    CreatePlugin

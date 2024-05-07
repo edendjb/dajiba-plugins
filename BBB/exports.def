@@ -1,0 +1,5 @@
+LIBRARY "bbb"
+EXPORTS
+    GetInterfaceVersion
+    CreatePluginInfo
+    CreatePlugin

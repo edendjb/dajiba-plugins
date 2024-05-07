@@ -1,0 +1,23 @@
+Made by Dajiba 2024
+
+AAA is an Ashita 3 plugin for FFXI that automatically reports ToDs of
+selected high value targets (e.g., HNMs).
+
+Upon receiving a death message for an allow-listed mob, the plugin will
+automatically post to a selected Discord channel using webhooks, then
+place a linkshell message containing an altertaru-style TOD message.
+
+TODs are automatically converted to Eastern Time.  This requires a
+specific timezone library that contains separate dependencies and files.
+Usually, these files are downloaded and installed upon first invocation.
+However, this may be unstable. 
+
+Depends on: 
+- json.hpp
+- tz library for timezones.  This is also required at runtime when
+  loading the plugin, or it will crash.  
+- httplib for webhooks
+- openssl library for using https to discord webhooks. Look for
+  libcrpyto_static.lib and libssl_static.lib binaries for linking. 
+
+Built in Visual Studio 2022 CE using 32-bit library target

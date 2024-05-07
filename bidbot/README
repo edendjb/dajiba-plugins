@@ -1,0 +1,71 @@
+BIDBOT by Dajiba 2024
+
+BidBot is a bid management plugin for Ashita 3.  This plugin monitors
+the loader's treasure pool and activates a 2 minute closed bid period
+when an item of interest drops in the pool.  
+
+When an item drops, the plugin automatically announces a linkshell
+message.  The drop is assigned a unique name, and other players in the
+linkshell can bid for the item with a private /tell to the player. 
+When the two minute bid period is over, the plugin will automatically
+announce the name of the player who bid the most points for the item,
+and automatically logs the result to a Discord webhook.
+
+BidBot makes announcements for:
+- 2 minute bid period starts upon item dropping
+  other players can bid using /t player <item-name> <points>
+- 1 minute reminder for the same item
+- bid over message; announce either the winner.  If no one bid, a free
+  lot is announced.  Tied bids are announced automatically. 
+- items marked as freelot once are automatically marked freelot until
+  the plugin is unloaded. 
+
+When a bid period is open, the plugin will listen for /tells sent to the
+player indicating the number of points another player wishes to bid on
+that item.  The plugin will store the number of points they bid in the
+/tell message.  It will also respond automatically in /tell to players
+who submit bids.  
+
+BidBot will manage and arbitrary number of open bids simultaneously.
+When an item drops, it is assigned a unique name (like "blm-hands-1").
+If the same item drops again, a new unique name is created by
+incrementing the number (like "blm-hands-2").  The unique name is used
+by other players to indicate which item they are bidding for.  It is
+used internally by bidbot to manage who has bid on what item, and who is
+the winner at the end of the bid period. 
+
+BidBot is not intelligent -- it will not do anything special if the same
+item appears in the pool multiple times -- it will just open multiple
+separate bids. 
+
+
+BidBot works by monitoring the treasure pool packets.  It does not
+change anything or lot items automatically.  It is up to the linkshell
+to manage point allotment per player and to enforce bid rules.  BidBot
+does not check whether a bid is valid for a player.  It only sorts the
+numers sent to it in tell.  
+
+
+datamap.h contains a large map of all items that BidBot monitors.  Other
+items can be added following the same format, so long as the item's id
+appears in the map.  
+
+zone.h contains a list of zone ids and zone names.  It is just there to
+help manage which zones the player is currently in.  This is used for
+the webhook submission -- when a bid completes, the winner and the
+location in which the bid took place is announced to Discord. 
+
+
+
+
+BidBot requires:
+
+- ADK 3
+- json.hpp
+- httplib for webhooks
+- static linking of openssl libraries for https webhooks to discord
+  (find libcrypto_static.lib and libssl_static.lib binaries for
+  linking) 
+
+
+Built as 32-bit library target in Visual Studio 2022 CE
