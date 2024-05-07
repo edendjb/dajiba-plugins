@@ -1,0 +1,74 @@
+Dajiba's Ashita Plugins - May 2024
+
+
+This is a collection of small plugins I wrote to help with tedious DKP
+management in FFXI.  These are primarily designed around what the Wingz
+LS happens to do on the Eden server, but these may be useful to others. 
+
+
+These are all C++ plugins (i.e., compiled to .dll files and loaded with
+/load xyz in Ashita).  
+
+I release these plugins for the purpose of complying with Eden's rules
+surrounding approved plugins.  I do not intend to support them.  The
+source code is poorly-documented, poorly-written in many places, and
+that will honestly not change so long as they solve the tedium faced by
+Wingz LS organizers. 
+
+In addition, these plugins may require low-level understanding of
+technical workings of DarkStar-like FFXI private servers.  For example,
+finding an appropriate blowfish encryption key, monitoring treasure pool
+network messages, and finding one's Linkshell unique ID number, are all
+not documented here, but required to use these plugins. 
+
+
+All plugins were implemented following the ADK3 example plugin.  To
+rebuild them, copy the ADK3 example, drop the files in, find the
+required external dependencies, and build as a 32-bit Library target.  I
+used Visual Studio 2022 Community Edition without any issues. 
+
+These plugins require external, open-source dependencies that I don't
+want to release here because of licensing concerns.  Find:
+- json.hpp (this is probably included by default now with modern C++
+  distributions)
+
+- httplib (this is a single .h file that you can include to support HTTP
+  requests, used for activating Discord webhooks)
+
+- there is a library for managing timezones in C++.  Only the AAA plugin
+  requires this for automatically reporting TODs in a timezone-agnostic
+  manner.  See https://howardhinnant.github.io/date/tz.html for
+  information about the library I used to achieve this effect.
+
+- the difficult one is OpenSSL.  I statically linked the openssl library
+  to enable https support with the discord webhooks.  You can either
+  find binary distributions (there are two files -- libcrypto_static.lib
+  and libssl_static.lib -- that you would need to find), or you can
+  build it yourself.  I built openssl from source in Windows.  It must
+  be 32-bit static libraries. 
+
+For each plugin, the directory structure should look something like:
+
+- AAA
+  |- ADK    (the ADK.h and related ADK development files should be in here)
+     |- ADH.K
+     |- CommandParser.h
+     |- ... other ADK files
+  |- AAA.h 
+  |- dllmain.cpp   
+  |- httplib.h
+  |- json.hpp
+  |- libcrypto_static.lib
+  |- libssl_static.lib
+  |- ... other files, like pch.h, pch.cpp, exports.def
+
+You will need to modify your Project configuration to make sure you have
+the openssl libraries linked (and specifying an appropriate library
+directory from which to link the .lib files).  Depending on your setup,
+you may also need to change the C++ standard (to stdc++17).  You also
+need the headers for openssl, which would need to be added to include
+directories in your project configuration. 
+
+
+Again, these plugins are released without support or warranty.  You use
+them at your own peril. 
